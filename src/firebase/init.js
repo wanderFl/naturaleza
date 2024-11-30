@@ -27,7 +27,7 @@
 
 // init.js
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -43,9 +43,20 @@ const firebaseConfig = {
 // Inicializa Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 
-
 // Inicializa Firestore y Auth
 const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
+
+// Función para asignar roles
+export const assignRole = async (uid, role) => {
+  try {
+    const userRef = doc(db, 'users', uid); // Referencia al documento del usuario en Firestore
+    await setDoc(userRef, { role }, { merge: true }); // Asigna el rol al usuario
+    console.log(`Rol '${role}' asignado al usuario con UID: ${uid}`);
+  } catch (error) {
+    console.error('Error al asignar rol:', error);
+    throw error;
+  }
+};
 
 export { db, auth };

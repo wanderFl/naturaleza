@@ -9,6 +9,10 @@
 
 <script>
 import Navigation from '@/components/layout/Navigation'
+
+import seedData from "@/utils/seedData";
+seedData();
+
 export default {
   components: {
     Navigation

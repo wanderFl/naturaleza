@@ -25,6 +25,8 @@ src/
 │   ├── helpers                  # Carpeta de helpers
 │   ├   ├──_helpers.scss         # Diseño
 │   └──App.scss                  # Importacion de bulma
+│   └── utils                    #carpeta utils
+│        ├── seedData
 ├── views/                       # Vistas de la aplicación
 │   ├── Auth                     # Carpeta Auth
 │   ├── Login.vue                # Vista de login de usuario
@@ -86,8 +88,6 @@ export { db };
 La aplicación estará disponible en `http://localhost:8081`.
 
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## Contacto
 
