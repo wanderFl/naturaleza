@@ -16,17 +16,18 @@ pipeline {
           userRemoteConfigs: [[url: 'https://github.com/wanderFl/naturaleza.git', credentialsId: 'github-creds']]
         ])
         script {
-          // leer team.json si existe
+          // parse team.json si existe
           if (fileExists('team.json')) {
             try {
               def json = new groovy.json.JsonSlurper().parseText(readFile('team.json'))
               env.TEAM_SIZE = json?.size?.toString()
               echo "team.json -> TEAM_SIZE=${env.TEAM_SIZE}"
             } catch (e) {
-              echo "team.json inválido; se usa GROUP_SIZE"
+              echo "team.json inválido, se usará GROUP_SIZE"
             }
+          } else {
+            echo "No existe team.json"
           }
-          echo "PARAM GROUP_SIZE=${params.GROUP_SIZE}"
         }
       }
     }
@@ -34,15 +35,28 @@ pipeline {
     stage('Build & Test') {
       steps {
         script {
-          // helper multiplataforma
-          def run = { cmd -> if (isUnix()) sh(cmd) else bat(cmd) }
+          def hasPkg = fileExists('package.json')
+          if (!hasPkg) {
+            echo "Sin package.json — omitiendo instalación/test de Node."
+            return
+          }
 
-          // instala deps y corre pruebas básicas si existe package.json (ejemplo genérico)
-          if (fileExists('package.json')) {
-            run('[ -f package.json ] && npm ci || echo "no package.json"')
-            run('[ -f package.json ] && npm test || echo "sin tests configurados"')
-          } else {
-            echo "Sin package.json — omitiendo instalación/tests."
+          // helper multiplataforma
+          def run = { cmd ->
+            if (isUnix()) {
+              sh cmd
+            } else {
+              bat cmd
+            }
+          }
+
+          // instalación + pruebas básicas
+          try {
+            run('npm ci')
+            run('npm test')
+          } catch (err) {
+            echo "Error en build/test (se muestra pero no detiene aquí): ${err}"
+            // opcional: throw err  -> si quieres que falle en este punto
           }
         }
       }
@@ -54,23 +68,33 @@ pipeline {
           def raw = env.TEAM_SIZE ?: params.GROUP_SIZE
           int n = 1
           try { n = Integer.parseInt(raw.toString()) } catch(e) { n = 1 }
-          echo "Usando tamaño = ${n}"
 
-          def run = { cmd -> if (isUnix()) sh(cmd) else bat(cmd) }
+          def runIgnore = { cmd ->
+            try {
+              if (isUnix()) sh cmd else bat cmd
+            } catch (ex) {
+              echo "Comando falló (ignored): ${cmd}"
+            }
+          }
+
+          echo "Usando tamaño de equipo = ${n}"
 
           if (n <= 2) {
-            echo "Flujo rápido (<=2) → build + deploy staging"
-            run('echo "build rápido"; [ -f package.json ] && npm run build || echo "no build"')
-            run('echo "deploy a STAGING (simulado)"')
+            echo "Flujo rápido (<=2): build + deploy staging"
+            runIgnore('npm run build')
+            runIgnore('echo Deploy to STAGING (simulado)')
           } else if (n <= 5) {
-            echo "Flujo intermedio (3-5) → tests extendidos + calidad + staging"
-            run('echo "tests extendidos y lint (simulado)"; [ -f package.json ] && npm run test:full || echo "sin test:full"')
-            run('echo "generando reportes (simulado)"; echo "deploy a STAGING (simulado)"')
+            echo "Flujo intermedio (3-5): tests extendidos + calidad + staging"
+            runIgnore('npm run test:full')
+            runIgnore('npm run lint')
+            runIgnore('echo Generando reportes (simulado)')
+            runIgnore('echo Deploy to STAGING (simulado)')
           } else {
-            echo "Flujo controlado (>5) → reportes + aprobación manual"
-            run('echo "tests intensivos y reportes (simulado)"')
+            echo "Flujo controlado (>5): reportes + aprobación manual"
+            runIgnore('npm run test:full')
+            runIgnore('npm run lint')
             input message: "Equipo grande (${n}) — ¿Aprobar despliegue a PRODUCCIÓN?", ok: 'Aprobar'
-            run('echo "Desplegando a PRODUCCIÓN (simulado)"')
+            runIgnore('echo Deploy to PRODUCTION (simulado)')
           }
         }
       }
