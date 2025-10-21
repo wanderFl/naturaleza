@@ -5,12 +5,16 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "test": "vue-cli-service test:unit",
+    "test:unit": "vue-cli-service test:unit",
+    "test:ci": "vue-cli-service test:unit --watchAll=false --runInBand",
+    "cy:run": "cypress run --headless"
   },
   "dependencies": {
     "bulma": "^1.0.2",
     "core-js": "^3.8.3",
-    "firebase": "^11.0.1",
+    "firebase": "^11.2.0",
     "login": "file:",
     "vue": "^3.2.13",
     "vue-router": "^4.4.5"
@@ -21,9 +25,14 @@
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
     "@vue/cli-plugin-router": "~5.0.0",
+    "@vue/cli-plugin-unit-jest": "^5.0.9",
     "@vue/cli-service": "~5.0.0",
-    "eslint": "^7.32.0",
-    "eslint-plugin-vue": "^8.0.3",
+    "@vue/test-utils": "^2.4.6",
+    "@vue/vue3-jest": "^27.0.0",
+    "babel-jest": "^27.5.1",
+    "eslint": "^8.57.1",
+    "eslint-plugin-vue": "^9.33.0",
+    "flush-promises": "^1.0.2",
     "sass": "^1.80.4",
     "sass-loader": "^12.6.0"
   }

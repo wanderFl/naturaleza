@@ -24,11 +24,50 @@
 // // const analytics = getAnalytics(app);
 
 
+/////////////////////////////////////
 
-// init.js
+// import { initializeApp } from 'firebase/app';
+// import { getFirestore, doc, setDoc } from 'firebase/firestore';
+// import { getAuth } from 'firebase/auth';
+
+// const firebaseConfig = {
+//   apiKey: "AIzaSyCPVpcvnWaA9rlAtT7EiFVm3Cin_MDlZFE",
+//   authDomain: "proyectobd-b61d9.firebaseapp.com",
+//   projectId: "proyectobd-b61d9",
+//   storageBucket: "proyectobd-b61d9.appspot.com",
+//   messagingSenderId: "503938430958",
+//   appId: "1:503938430958:web:8fb5b6185bb8f1df9380ff",
+//   measurementId: "G-BP6DZR4E0Z"
+// };
+
+// // Inicializa Firebase
+// const firebaseApp = initializeApp(firebaseConfig);
+
+// // Inicializa Firestore y Auth
+// const db = getFirestore(firebaseApp);
+// const auth = getAuth(firebaseApp);
+
+// // Función para asignar roles
+// export const assignRole = async (uid, role) => {
+//   try {
+//     const userRef = doc(db, 'users', uid); // Referencia al documento del usuario en Firestore
+//     await setDoc(userRef, { role }, { merge: true }); // Asigna el rol al usuario
+//     console.log(`Rol '${role}' asignado al usuario con UID: ${uid}`);
+//   } catch (error) {
+//     console.error('Error al asignar rol:', error);
+//     throw error;
+//   }
+// };
+
+// export { db, auth };
+
+
+
+// src/firebase/init.js
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';  // Corrige la importación
+import { getAuth } from 'firebase/auth';  // Asegúrate de que esté importado correctamente
+import { doc, setDoc } from 'firebase/firestore'; // Importa las funciones necesarias de Firestore
 
 const firebaseConfig = {
   apiKey: "AIzaSyCPVpcvnWaA9rlAtT7EiFVm3Cin_MDlZFE",
@@ -37,7 +76,7 @@ const firebaseConfig = {
   storageBucket: "proyectobd-b61d9.appspot.com",
   messagingSenderId: "503938430958",
   appId: "1:503938430958:web:8fb5b6185bb8f1df9380ff",
-  measurementId: "G-BP6DZR4E0Z"
+  measurementId: "G-BP6DZR4E0Z",
 };
 
 // Inicializa Firebase
@@ -59,4 +98,5 @@ export const assignRole = async (uid, role) => {
   }
 };
 
-export { db, auth };
+// Exportación de las variables
+export { db, firebaseApp, auth };
