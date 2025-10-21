@@ -1,13 +1,16 @@
 pipeline {
    agent any
+
    parameters {
        string(name: 'GROUP_SIZE', defaultValue: '3', description: 'Tamaño del equipo (1,2,3...)')
    }
+
    environment {
        NODE_HOME = '/usr/local/bin/node'
        PATH = "$NODE_HOME:$PATH"
        GITHUB_REPO = 'https://github.com/wanderFl/naturaleza.git'
    }
+
    stages {
        stage('Prepare') {
            steps {
@@ -33,6 +36,7 @@ pipeline {
                }
            }
        }
+
        stage('Build & Test') {
            steps {
                script {
@@ -41,10 +45,12 @@ pipeline {
                        echo "🚫 Sin package.json — omitiendo instalación/test de Node."
                        return
                    }
+
                    // Helper multiplataforma
                    def run = { cmd ->
                        if (isUnix()) sh cmd else bat cmd
                    }
+
                    try {
                        echo "📦 Instalando dependencias..."
                        run('npm ci || npm install')
@@ -58,12 +64,14 @@ pipeline {
                }
            }
        }
+
        stage('Quality & Deploy') {
            steps {
                script {
                    def raw = env.TEAM_SIZE ?: params.GROUP_SIZE
                    int n = 1
                    try { n = Integer.parseInt(raw.toString()) } catch (e) { n = 1 }
+
                    def runIgnore = { cmd ->
                        try {
                            if (isUnix()) sh cmd else bat cmd
@@ -71,7 +79,9 @@ pipeline {
                            echo "⚠️ Comando falló (ignorado): ${cmd}"
                        }
                    }
+
                    echo "👥 Usando tamaño de equipo = ${n}"
+
                    if (n <= 2) {
                        echo "⚡ Flujo rápido (<=2): build + deploy staging"
                        runIgnore('npm run build')
@@ -93,18 +103,33 @@ pipeline {
            }
        }
    } // stages
+
    post {
        always {
            echo "🧹 Pipeline finalizado. Limpieza de entorno..."
            cleanWs()
        }
+
        success {
            echo "✅ Build OK."
-           sh 'curl -X POST -H "Content-Type: application/json" -d \'{"text":"✅ Éxito en Jenkins Pipeline Naturaleza"}\' https://hooks.slack.com/services/TU_WEBHOOK'
+           // Notificación a Slack (Windows compatible)
+           bat '''
+           curl -X POST ^
+               -H "Content-Type: application/json" ^
+               -d "{\\"text\\":\\"✅ Éxito en Jenkins Pipeline Naturaleza\\"}" ^
+               https://hooks.slack.com/services/TU_WEBHOOK
+           '''
        }
+
        failure {
            echo "❌ Build falló."
-           sh 'curl -X POST -H "Content-Type: application/json" -d \'{"text":"❌ Falló el Pipeline de Naturaleza"}\' https://hooks.slack.com/services/TU_WEBHOOK'
+           // Notificación a Slack (Windows compatible)
+           bat '''
+           curl -X POST ^
+               -H "Content-Type: application/json" ^
+               -d "{\\"text\\":\\"❌ Falló el Pipeline de Naturaleza\\"}" ^
+               https://hooks.slack.com/services/TU_WEBHOOK
+           '''
        }
    }
 }
