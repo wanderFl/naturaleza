@@ -117,7 +117,7 @@ pipeline {
            curl -X POST ^
                -H "Content-Type: application/json" ^
                -d "{\\"text\\":\\"✅ Éxito en Jenkins Pipeline Naturaleza\\"}" ^
-               https://hooks.slack.com/services/TU_WEBHOOK
+               https://hooks.slack.com/services/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
            '''
        }
 
@@ -128,7 +128,7 @@ pipeline {
            curl -X POST ^
                -H "Content-Type: application/json" ^
                -d "{\\"text\\":\\"❌ Falló el Pipeline de Naturaleza\\"}" ^
-               https://hooks.slack.com/services/TU_WEBHOOK
+               https://hooks.slack.com/services/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
            '''
        }
    }
