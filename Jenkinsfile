@@ -1,10 +1,10 @@
 pipeline {
   agent any
 
-  environment {
-    NODE_HOME   = 'C:\\Program Files\\nodejs'
-    PATH        = "$NODE_HOME;$PATH"
-    GITHUB_REPO = 'https://github.com/wanderFl/naturaleza.git'
+  environment { 
+    NODE_HOME = '/usr/local/bin/node' 
+    PATH = "$NODE_HOME:$PATH" 
+    GITHUB_REPO = 'https://github.com/wanderFl/naturaleza.git' 
   }
 
   stages {
