@@ -1,0 +1,96 @@
+version: 2.1
+ 
+orbs:
+  node: circleci/node@5.0.2
+  slack: circleci/slack@4.12.5
+ 
+jobs:
+  build_and_test:
+    docker:
+      - image: cimg/node:18.19
+    environment:
+      GITHUB_REPO: "https://github.com/wanderFl/naturaleza.git"
+    steps:
+      - checkout
+ 
+      - run:
+          name: Install dependencies
+          command: |
+            if [ -f package.json ]; then
+              npm ci || npm install
+            fi
+ 
+      - run:
+          name: Build project
+          command: |
+            if [ -f package.json ]; then
+              npm run build
+            fi
+ 
+      - run:
+          name: Run unit tests
+          command: |
+            if [ -f package.json ]; then
+              npm run test:unit -- --passWithNoTests || true
+            fi
+ 
+      - run:
+          name: Lint code
+          command: |
+            if [ -f package.json ]; then
+              npm run lint || true
+            fi
+ 
+      - run:
+          name: CI Tests
+          command: |
+            if [ -f package.json ]; then
+              npm run test:ci
+            fi
+ 
+      - run:
+          name: Deploy to STAGING
+          command: echo "🚀 Deploy to STAGING (simulado)"
+ 
+      - slack/notify:
+          event: always
+          custom: |
+            {
+              "text": "🧹 Pipeline finalizado. Limpieza de entorno..."
+            }
+ 
+      - slack/notify:
+          event: pass
+          custom: |
+            {
+              "text": "✅ Éxito en CircleCI Pipeline Naturaleza"
+            }
+ 
+      - slack/notify:
+          event: fail
+          custom: |
+            {
+              "text": "❌ Falló el Pipeline de Naturaleza"
+            }
+ 
+  deploy_production:
+    docker:
+      - image: cimg/node:18.19
+    steps:
+      - checkout
+      - run:
+          name: Manual approval and deploy
+          command: echo "🚀 Deploy to PRODUCTION (simulado)"
+ 
+workflows:
+  version: 2
+  build_test_deploy:
+    jobs:
+      - build_and_test
+      - hold_for_approval:
+          type: approval
+          requires:
+            - build_and_test
+      - deploy_production:
+          requires:
+            - hold_for_approval
