@@ -125,6 +125,8 @@ post {
               -d "{\\"text\\":\\"❌ Falló el Pipeline de Naturaleza\\"}" ^
               %WEBHOOK_URL%
             '''
-        }
-    }
+          }
+      }
+    }   
 }   
+
