@@ -14,43 +14,65 @@ jobs:
       - checkout
  
       - run:
+          name: Prepare / Checkout
+          command: |
+            echo "📦 Clonando repositorio desde ${GITHUB_REPO}"
+            git fetch --all
+ 
+      - run:
           name: Install dependencies
           command: |
             if [ -f package.json ]; then
+              echo "📦 Instalando dependencias..."
               npm ci || npm install
+            else
+              echo "⚠️ No se encontró package.json"
             fi
  
       - run:
           name: Build project
           command: |
             if [ -f package.json ]; then
+              echo "🏗️ Compilando proyecto..."
               npm run build
+            else
+              echo "⚠️ No se encontró package.json, omitiendo build"
             fi
  
       - run:
           name: Run unit tests
           command: |
             if [ -f package.json ]; then
+              echo "🧪 Ejecutando pruebas unitarias..."
               npm run test:unit -- --passWithNoTests || true
+            else
+              echo "⚠️ No se encontró package.json, omitiendo tests"
             fi
  
       - run:
           name: Lint code
           command: |
             if [ -f package.json ]; then
+              echo "🔍 Ejecutando lint..."
               npm run lint || true
+            else
+              echo "⚠️ No se encontró package.json, omitiendo lint"
             fi
  
       - run:
           name: CI Tests
           command: |
             if [ -f package.json ]; then
+              echo "⚙️ Ejecutando pruebas CI..."
               npm run test:ci
+            else
+              echo "⚠️ No se encontró package.json, omitiendo pruebas CI"
             fi
  
       - run:
           name: Deploy to STAGING
-          command: echo "🚀 Deploy to STAGING (simulado)"
+          command: |
+            echo "🚀 Deploy to STAGING (simulado)"
  
       - slack/notify:
           event: always
@@ -80,7 +102,9 @@ jobs:
       - checkout
       - run:
           name: Manual approval and deploy
-          command: echo "🚀 Deploy to PRODUCTION (simulado)"
+          command: |
+            echo "🚀 Deploy to PRODUCTION (simulado)"
+            echo "Esperando aprobación manual en workflow..."
  
 workflows:
   version: 2
