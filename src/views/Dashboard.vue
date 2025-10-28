@@ -42,7 +42,7 @@
 
       <!-- Formulario de creación (solo para admin) -->
       <div v-if="isAdmin && isCreating" class="box">
-        <h2 class="title is-4">Agregar Nuevo Dato. Agregar datos</h2>
+        <h2 class="title is-4">Agregar Nuevo Dato. Agregar datos nuevos</h2>
         <form @submit.prevent="createData">
           <div class="field">
             <label class="label">Año</label>
