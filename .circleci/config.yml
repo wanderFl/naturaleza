@@ -1,3 +1,4 @@
+
 # version: 2.1
 # orbs:
 #  node: circleci/node@5.0.2
@@ -133,13 +134,16 @@
 #              only:
 #                - main
 #                - /feature\/.*/
-#      # ✅ Notificaciones y despliegue solo para main
+#      # ✅ Notificaciones para main y feature/*
 #      - slack_notifications:
 #          requires:
 #            - test_project
 #          filters:
 #            branches:
-#              only: main
+#              only:
+#                - main
+#                - /feature\/.*/
+#      # ✅ Deploy y aprobación solo en main
 #      - hold_for_approval:
 #          type: approval
 #          requires:
@@ -188,7 +192,7 @@ jobs:
            else
              echo "⚠️ No se encontró package.json, omitiendo build"
            fi
-     # ✅ Guardar dependencias y código para los siguientes jobs
+     # ✅ Guardar dependencias y build
      - persist_to_workspace:
          root: .
          paths:
@@ -196,12 +200,12 @@ jobs:
            - package.json
            - package-lock.json
            - dist
+           - Dockerfile
  test_project:
    docker:
      - image: cimg/node:18.19
    steps:
      - checkout
-     # ✅ Recuperar dependencias del build anterior
      - attach_workspace:
          at: .
      - run:
@@ -258,22 +262,28 @@ jobs:
            }
  deploy_production:
    docker:
-     - image: cimg/node:18.19
+     - image: docker:24.0.5 # ✅ imagen oficial de Docker para correr contenedores
    steps:
      - checkout
-     # ✅ (opcional) recuperar workspace si algún artefacto fuera necesario
      - attach_workspace:
          at: .
+     - setup_remote_docker: # CircleCI usa un entorno con Docker habilitado
+         version: 24.0.5
      - run:
-         name: Manual approval and deploy
+         name: Build Docker image
          command: |
-           echo "🚀 Deploy a PRODUCCIÓN (simulado)"
-           echo "Esperando aprobación manual en workflow..."
+           echo "🐳 Construyendo imagen Docker para producción..."
+           docker build -t naturaleza-app:latest .
+     - run:
+         name: Run Docker container (simulación de producción)
+         command: |
+           echo "🚀 Ejecutando contenedor en modo producción..."
+           docker run -d -p 8080:80 --name naturaleza naturaleza-app:latest
+           echo "✅ Aplicación desplegada (simulada) en entorno de producción"
 workflows:
  version: 2
  build_test_deploy:
    jobs:
-     # ✅ Ejecutar siempre (feature/* y main)
      - build_project:
          filters:
            branches:
@@ -288,7 +298,6 @@ workflows:
              only:
                - main
                - /feature\/.*/
-     # ✅ Notificaciones para main y feature/*
      - slack_notifications:
          requires:
            - test_project
@@ -297,7 +306,6 @@ workflows:
              only:
                - main
                - /feature\/.*/
-     # ✅ Deploy y aprobación solo en main
      - hold_for_approval:
          type: approval
          requires:
