@@ -262,13 +262,14 @@ jobs:
            }
  deploy_production:
    docker:
-     - image: docker:24.0.5 # ✅ imagen oficial de Docker para correr contenedores
+     - image: docker:stable
    steps:
      - checkout
      - attach_workspace:
          at: .
-     - setup_remote_docker: # CircleCI usa un entorno con Docker habilitado
-         version: 24.0.5
+     - setup_remote_docker: # ← ¡sin “version:”!
+          docker_layer_caching: false
+ 
      - run:
          name: Build Docker image
          command: |
