@@ -97,33 +97,36 @@ pipeline {
     }
 
     /* === 📣 NOTIFICACIONES A SLACK === */
-    post {
-        always {
-            echo '🧹 Pipeline finalizado. Limpieza de entorno...'
+   post {
+    always {
+        echo "🧹 Pipeline finalizado. Limpieza de entorno..."
+        cleanWs()
+    }
+ 
+    success {
+        echo "✅ Build OK."
+        // Notificación a Slack usando credencial de Jenkins
+        withCredentials([string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'WEBHOOK_URL')]) {
             bat '''
-                curl -k -X POST ^
-                    -H "Content-Type: application/json" ^
-                    -d "{\\"text\\":\\"🧹 Pipeline finalizado. Limpieza de entorno...\\"}" ^
-                    %SLACK_WEBHOOK_URL%
-            '''
-        }
-
-        success {
-            bat '''
-                curl -k -X POST ^
-                    -H "Content-Type: application/json" ^
-                    -d "{\\"text\\":\\"✅ Éxito en Jenkins Pipeline Naturaleza\\"}" ^
-                    %SLACK_WEBHOOK_URL%
-            '''
-        }
-
-        failure {
-            bat '''
-                curl -k -X POST ^
-                    -H "Content-Type: application/json" ^
-                    -d "{\\"text\\":\\"❌ Falló el Pipeline de Naturaleza\\"}" ^
-                    %SLACK_WEBHOOK_URL%
+            curl -k -X POST ^
+              -H "Content-Type: application/json" ^
+              -d "{\\"text\\":\\"✅ Éxito en Jenkins Pipeline Naturaleza\\"}" ^
+              %WEBHOOK_URL%
             '''
         }
     }
+ 
+    failure {
+        echo "❌ Build falló."
+        // Notificación a Slack usando credencial de Jenkins
+        withCredentials([string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'WEBHOOK_URL')]) {
+            bat '''
+            curl -k -X POST ^
+              -H "Content-Type: application/json" ^
+              -d "{\\"text\\":\\"❌ Falló el Pipeline de Naturaleza\\"}" ^
+              %WEBHOOK_URL%
+            '''
+          }
+      }
+    }   
 }
