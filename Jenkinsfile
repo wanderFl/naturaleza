@@ -83,23 +83,32 @@ pipeline {
         }
 
         /* === 🚀 DEPLOY === */
-        stage('Deploy to Production') {
-            when { 
-              expression {
-            // Funciona tanto si Jenkins ve la rama como 'main' o 'origin/main'
-                  env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main'
-              }
-                 }  // Solo se ejecuta en main
-            steps {
-                echo "🚀 Desplegando aplicación a Producción (simulado)..."
-                bat '''
-                    echo 🐳 Construyendo imagen Docker...
-                    echo 🚀 Ejecutando contenedor en modo producción...
-                    echo ✅ Aplicación desplegada correctamente en entorno de producción
-                '''
-            }
+       stage('Deploy to Production (Simulado)') {
+      when { 
+        expression {
+          // Funciona tanto si Jenkins ve la rama como 'main' o 'origin/main'
+          env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main'
         }
+      }
+      steps {
+        echo "🚀 Iniciando despliegue simulado en máquina Jenkins..."
+
+        bat '''
+          echo 📁 Preparando entorno de despliegue local...
+          if not exist C:\\Deploy mkdir C:\\Deploy
+          if exist C:\\Deploy\\naturaleza rmdir /s /q C:\\Deploy\\naturaleza
+          mkdir C:\\Deploy\\naturaleza
+
+          echo 📦 Copiando archivos compilados...
+          xcopy dist C:\\Deploy\\naturaleza /E /I /Y >nul
+
+          echo 🌐 Simulando servidor local en http://localhost:8080
+          echo (Simulación) La aplicación está "desplegada" en C:\\Deploy\\naturaleza
+          echo ✅ Despliegue completado correctamente
+        '''
+      }
     }
+  }
 
     /* === 📣 NOTIFICACIONES A SLACK === */
    post {
