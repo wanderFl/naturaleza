@@ -84,11 +84,11 @@ pipeline {
 
         /* === 🚀 DEPLOY === */
        stage('Deploy to Production (Simulado)') {
-      when { 
-        expression {
+          when { 
+            expression {
           // Funciona tanto si Jenkins ve la rama como 'main' o 'origin/main'
-          env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main'
-        }
+              env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main'
+          }
       }
       steps {
         echo "🚀 Iniciando despliegue simulado en máquina Jenkins..."
