@@ -84,7 +84,12 @@ pipeline {
 
         /* === 🚀 DEPLOY === */
         stage('Deploy to Production') {
-            when { branch 'main' }  // Solo se ejecuta en main
+            when { 
+              expression {
+            // Funciona tanto si Jenkins ve la rama como 'main' o 'origin/main'
+                  env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main'
+              }
+                 }  // Solo se ejecuta en main
             steps {
                 echo "🚀 Desplegando aplicación a Producción (simulado)..."
                 bat '''
