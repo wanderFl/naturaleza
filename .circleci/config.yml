@@ -154,7 +154,8 @@ jobs:
          command: |
            echo "📤 Subiendo imagen a DockerHub..."
            docker push wanderleyfl/naturaleza-app:latest
-###############################################################################
+##########################################################################
+# codigo nuevo
 
 workflows:
  version: 2
