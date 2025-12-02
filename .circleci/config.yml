@@ -1,166 +1,8 @@
-
-# version: 2.1
-# orbs:
-#  node: circleci/node@5.0.2
-#  slack: circleci/slack@4.12.5
-# jobs:
-#  build_project:
-#    docker:
-#      - image: cimg/node:18.19
-#    environment:
-#      GITHUB_REPO: "https://github.com/wanderFl/naturaleza.git"
-#    steps:
-#      - checkout
-#      - run:
-#          name: Prepare / Checkout
-#          command: |
-#            echo "📦 Clonando repositorio desde ${GITHUB_REPO}"
-#            git fetch --all
-#      - run:
-#          name: Install dependencies
-#          command: |
-#            if [ -f package.json ]; then
-#              echo "📦 Instalando dependencias..."
-#              npm ci || npm install
-#            else
-#              echo "⚠️ No se encontró package.json"
-#            fi
-#      - run:
-#          name: Build project
-#          command: |
-#            if [ -f package.json ]; then
-#              echo "🏗️ Compilando proyecto..."
-#              npm run build
-#            else
-#              echo "⚠️ No se encontró package.json, omitiendo build"
-#            fi
-#      # ✅ Guardar dependencias y código para los siguientes jobs
-#      - persist_to_workspace:
-#          root: .
-#          paths:
-#            - node_modules
-#            - package.json
-#            - package-lock.json
-#            - dist
-#  test_project:
-#    docker:
-#      - image: cimg/node:18.19
-#    steps:
-#      - checkout
-#      # ✅ Recuperar dependencias del build anterior
-#      - attach_workspace:
-#          at: .
-#      - run:
-#          name: Run unit tests
-#          command: |
-#            if [ -f package.json ]; then
-#              echo "🧪 Ejecutando pruebas unitarias..."
-#              npm run test:unit -- --passWithNoTests || true
-#            else
-#              echo "⚠️ No se encontró package.json, omitiendo tests"
-#            fi
-#      - run:
-#          name: Lint code
-#          command: |
-#            if [ -f package.json ]; then
-#              echo "🔍 Ejecutando lint..."
-#              npm run lint || true
-#            else
-#              echo "⚠️ No se encontró package.json, omitiendo lint"
-#            fi
-#      - run:
-#          name: CI Tests
-#          command: |
-#            if [ -f package.json ]; then
-#              echo "⚙️ Ejecutando pruebas CI..."
-#              npm run test:ci
-#            else
-#              echo "⚠️ No se encontró package.json, omitiendo pruebas CI"
-#            fi
-#  slack_notifications:
-#    docker:
-#      - image: cimg/base:stable
-#    steps:
-#      - slack/notify:
-#          event: always
-#          channel: "#general-wanderley"
-#          custom: |
-#            {
-#              "text": "🧹 Pipeline finalizado. Limpieza de entorno..."
-#            }
-#      - slack/notify:
-#          event: pass
-#          channel: "#general-wanderley"
-#          custom: |
-#            {
-#              "text": "✅ Éxito en CircleCI Pipeline Naturaleza"
-#            }
-#      - slack/notify:
-#          event: fail
-#          channel: "#general-wanderley"
-#          custom: |
-#            {
-#              "text": "❌ Falló el Pipeline de Naturaleza"
-#            }
-#  deploy_production:
-#    docker:
-#      - image: cimg/node:18.19
-#    steps:
-#      - checkout
-#      # ✅ (opcional) recuperar workspace si algún artefacto fuera necesario
-#      - attach_workspace:
-#          at: .
-#      - run:
-#          name: Manual approval and deploy
-#          command: |
-#            echo "🚀 Deploy a PRODUCCIÓN (simulado)"
-#            echo "Esperando aprobación manual en workflow..."
-# workflows:
-#  version: 2
-#  build_test_deploy:
-#    jobs:
-#      # ✅ Ejecutar siempre (feature/* y main)
-#      - build_project:
-#          filters:
-#            branches:
-#              only:
-#                - main
-#                - /feature\/.*/
-#      - test_project:
-#          requires:
-#            - build_project
-#          filters:
-#            branches:
-#              only:
-#                - main
-#                - /feature\/.*/
-#      # ✅ Notificaciones para main y feature/*
-#      - slack_notifications:
-#          requires:
-#            - test_project
-#          filters:
-#            branches:
-#              only:
-#                - main
-#                - /feature\/.*/
-#      # ✅ Deploy y aprobación solo en main
-#      - hold_for_approval:
-#          type: approval
-#          requires:
-#            - slack_notifications
-#          filters:
-#            branches:
-#              only: main
-#      - deploy_production:
-#          requires:
-#            - hold_for_approval
-#          filters:
-#            branches:
-#              only: main
 version: 2.1
 orbs:
  node: circleci/node@5.0.2
  slack: circleci/slack@4.12.5
+
 jobs:
  build_project:
    docker:
@@ -192,7 +34,8 @@ jobs:
            else
              echo "⚠️ No se encontró package.json, omitiendo build"
            fi
-     # ✅ Guardar dependencias y build
+
+     # Mantengo todo igual:
      - persist_to_workspace:
          root: .
          paths:
@@ -201,6 +44,7 @@ jobs:
            - package-lock.json
            - dist
            - Dockerfile
+
  test_project:
    docker:
      - image: cimg/node:18.19
@@ -235,6 +79,7 @@ jobs:
            else
              echo "⚠️ No se encontró package.json, omitiendo pruebas CI"
            fi
+
  slack_notifications:
    docker:
      - image: cimg/base:stable
@@ -260,6 +105,7 @@ jobs:
            {
              "text": "❌ Falló el Pipeline de Naturaleza"
            }
+
  deploy_production:
    docker:
      - image: docker:stable
@@ -267,9 +113,8 @@ jobs:
      - checkout
      - attach_workspace:
          at: .
-     - setup_remote_docker: # ← ¡sin “version:”!
+     - setup_remote_docker:
           docker_layer_caching: false
- 
      - run:
          name: Build Docker image
          command: |
@@ -281,6 +126,31 @@ jobs:
            echo "🚀 Ejecutando contenedor en modo producción..."
            docker run -d -p 8080:80 --name naturaleza naturaleza-app:latest
            echo "✅ Aplicación desplegada (simulada) en entorno de producción"
+
+###############################################################################
+# 🟢 NUEVO JOB AGREGADO — NO SE MODIFICÓ NADA DE LO EXISTENTE
+###############################################################################
+ push_docker_image:
+   docker:
+     - image: docker:stable
+   steps:
+     - checkout
+     - attach_workspace:
+         at: .
+     - setup_remote_docker:
+          docker_layer_caching: false
+     - run:
+         name: Build Docker image for ArgoCD
+         command: |
+           echo "🐳 Construyendo imagen Docker para ArgoCD..."
+           docker build -t wanderfl/naturaleza-app:latest .
+     - run:
+         name: Push DockerHub image
+         command: |
+           echo "📤 Subiendo imagen a DockerHub..."
+           docker push wanderfl/naturaleza-app:latest
+###############################################################################
+
 workflows:
  version: 2
  build_test_deploy:
@@ -299,6 +169,17 @@ workflows:
              only:
                - main
                - /feature\/.*/
+     ###############################################################################
+     # 🟢 NUEVA LÍNEA AGREGADA — ejecutar push_docker_image después de test_project
+     ###############################################################################
+     - push_docker_image:
+         requires:
+           - test_project
+         filters:
+           branches:
+             only:
+               - main
+     ###############################################################################
      - slack_notifications:
          requires:
            - test_project

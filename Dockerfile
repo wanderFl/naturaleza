@@ -1,14 +1,16 @@
-# Usa Node 18 como base
-FROM node:18
-# Directorio de trabajo dentro del contenedor
+# Etapa 1: Build de Vue
+FROM node:18 as build
 WORKDIR /app
-# Copia los archivos necesarios
+
 COPY package*.json ./
 RUN npm install
+
 COPY . .
-# Compila si aplica
 RUN npm run build
-# Expone el puerto (puede ser 80, 3000, 8080 según tu app)
+
+# Etapa 2: servir aplicación con NGINX
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+
 EXPOSE 80
-# Comando para correr tu app
-CMD ["npm", "start"]
+CMD ["nginx", "-g", "daemon off;"]

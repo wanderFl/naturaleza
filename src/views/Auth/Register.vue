@@ -7,20 +7,40 @@
                   <div class="field">
                       <label class="label">Name</label>
                       <div class="control">
-                          <input class="input" type="text" placeholder="e.g Alex Smith" v-model="name">
+                          <input 
+                            class="input" 
+                            type="text" 
+                            placeholder="e.g Alex Smith" 
+                            v-model="name"
+                            autocomplete="name"
+                            required
+                          >
                       </div>
                   </div>
                   <div class="field">
                       <label class="label">Email</label>
                       <div class="control">
-                          <input class="input" type="email" placeholder="e.g. alexsmith@gmail.com" v-model="email">
+                          <input 
+                            class="input" 
+                            type="email" 
+                            placeholder="e.g. alexsmith@gmail.com" 
+                            v-model="email"
+                            autocomplete="email"
+                            required
+                          >
                       </div>
                   </div>
   
                   <div class="field">
                       <label class="label">Contrasena</label>
                       <div class="control">
-                          <input class="input" type="password" v-model="password">
+                          <input 
+                            class="input" 
+                            type="password" 
+                            v-model="password"
+                            autocomplete="new-password"
+                            required
+                          >
                       </div>
                   </div>
   
