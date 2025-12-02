@@ -138,17 +138,22 @@ jobs:
      - attach_workspace:
          at: .
      - setup_remote_docker:
-          docker_layer_caching: false
+         docker_layer_caching: false
+     # 🔥 NECESARIO PARA PERMITIR PUSH A DOCKER HUB
+     - run:
+         name: Docker Login
+         command: |
+           echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
      - run:
          name: Build Docker image for ArgoCD
          command: |
            echo "🐳 Construyendo imagen Docker para ArgoCD..."
-           docker build -t wanderfl/naturaleza-app:latest .
+           docker build -t wanderleyfl/naturaleza-app:latest .
      - run:
          name: Push DockerHub image
          command: |
            echo "📤 Subiendo imagen a DockerHub..."
-           docker push wanderfl/naturaleza-app:latest
+           docker push wanderleyfl/naturaleza-app:latest
 ###############################################################################
 
 workflows:
