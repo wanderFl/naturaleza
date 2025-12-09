@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: vue-frontend
-          image: wanderfl/naturaleza-app:latest   # CircleCI lo empuja
+          image: wanderleyfl/naturaleza-app:latest   # CircleCI lo empuja
           ports:
             - containerPort: 80
