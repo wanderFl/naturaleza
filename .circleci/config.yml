@@ -157,6 +157,67 @@ jobs:
 ##########################################################################
 # codigo nuevo
 
+###############################################################################
+# 🔒 DEVSECOPS - SAST SECURITY SCAN
+###############################################################################
+ security_sast_scan:
+   docker:
+     - image: cimg/node:18.19
+   steps:
+     - checkout
+     - restore_cache:
+         keys:
+           - v1-security-deps-{{ checksum "api-json-vue/frontend-vue/package.json" }}
+           - v1-security-deps-
+     - run:
+         name: Install Security Dependencies
+         command: |
+           cd api-json-vue/frontend-vue
+           echo "📦 Instalando dependencias de seguridad..."
+           npm install
+     - save_cache:
+         paths:
+           - api-json-vue/frontend-vue/node_modules
+         key: v1-security-deps-{{ checksum "api-json-vue/frontend-vue/package.json" }}
+     - run:
+         name: Run SAST Security Scan with ESLint
+         command: |
+           cd api-json-vue/frontend-vue
+            echo "=========================================="
+            echo "🔒 Iniciando Análisis SAST con ESLint"
+            echo "=========================================="
+            
+            # Ejecutar análisis con salida en terminal Y archivo JSON
+            npm run lint -- --format=stylish --format=json --output-file=eslint-security-report.json || true
+            
+            echo ""
+            echo "=========================================="
+            echo "📊 Resultados del Análisis de Seguridad"
+            echo "=========================================="
+            
+            # Mostrar el reporte JSON formateado en terminal
+            if [ -f eslint-security-report.json ]; then
+              echo "✅ Reporte generado exitosamente"
+              echo ""
+              echo "📋 Resumen de problemas detectados:"
+              cat eslint-security-report.json | grep -E '"errorCount"|"warningCount"|"filePath"|"message"' || cat eslint-security-report.json
+            else
+              echo "❌ ERROR: No se pudo generar el reporte de seguridad"
+              exit 1
+            fi
+     - run:
+         name: Verify Security Standards
+         command: |
+           cd api-json-vue/frontend-vue
+           echo "🔍 Verificando estándares de seguridad..."
+           npm run lint
+     - store_artifacts:
+         path: api-json-vue/frontend-vue/eslint-security-report.json
+         destination: security-reports/eslint-security-report.json
+     - store_test_results:
+         path: api-json-vue/frontend-vue
+###############################################################################
+
 workflows:
  version: 2
  build_test_deploy:
@@ -176,7 +237,18 @@ workflows:
                - main
                - /feature\/.*/
      ###############################################################################
-     # 🟢 NUEVA LÍNEA AGREGADA — ejecutar push_docker_image después de test_project
+     # � DEVSECOPS - SAST Security Scan ejecutado después de test_project
+     ###############################################################################
+     - security_sast_scan:
+         requires:
+           - test_project
+         filters:
+           branches:
+             only:
+               - main
+               - /feature\/.*/
+     ###############################################################################
+     # �🟢 NUEVA LÍNEA AGREGADA — ejecutar push_docker_image después de test_project
      ###############################################################################
      - push_docker_image:
          requires:

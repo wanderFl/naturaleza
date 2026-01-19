@@ -69,6 +69,33 @@ pipeline {
             }
         }
 
+        /* === 🔒 SECURITY ANALYSIS (DevSecOps) === */
+        stage('Security Scan - SAST') {
+            steps {
+                echo '🔒 Ejecutando análisis de seguridad con ESLint (SAST)...'
+                bat '''
+                    cd api-json-vue\\frontend-vue
+                    if exist package.json (
+                      echo 📦 Instalando dependencias de seguridad...
+                      call npm install
+                      echo 🔍 Ejecutando ESLint Security Analysis...
+                      call npm run lint:security || exit /b 0
+                      if exist eslint-security-report.json (
+                        echo ✅ Reporte de seguridad generado
+                      ) else (
+                        echo ⚠️ No se generó reporte de seguridad
+                      )
+                    )
+                '''
+            }
+            post {
+                always {
+                    echo '📊 Archivando reporte de seguridad...'
+                    archiveArtifacts artifacts: 'api-json-vue/frontend-vue/eslint-security-report.json', allowEmptyArchive: true
+                }
+            }
+        }
+
         stage('CI Tests') {
             steps {
                 bat '''
