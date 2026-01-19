@@ -2,7 +2,6 @@ version: 2.1
 orbs:
  node: circleci/node@5.0.2
  slack: circleci/slack@4.12.5
-
 jobs:
  build_project:
    docker:
@@ -34,7 +33,6 @@ jobs:
            else
              echo "⚠️ No se encontró package.json, omitiendo build"
            fi
-
      # Mantengo todo igual:
      - persist_to_workspace:
          root: .
@@ -44,7 +42,6 @@ jobs:
            - package-lock.json
            - dist
            - Dockerfile
-
  test_project:
    docker:
      - image: cimg/node:18.19
@@ -79,7 +76,6 @@ jobs:
            else
              echo "⚠️ No se encontró package.json, omitiendo pruebas CI"
            fi
-
  slack_notifications:
    docker:
      - image: cimg/base:stable
@@ -105,7 +101,6 @@ jobs:
            {
              "text": "❌ Falló el Pipeline de Naturaleza"
            }
-
  deploy_production:
    docker:
      - image: docker:stable
@@ -114,7 +109,7 @@ jobs:
      - attach_workspace:
          at: .
      - setup_remote_docker:
-          docker_layer_caching: false
+         docker_layer_caching: false
      - run:
          name: Build Docker image
          command: |
@@ -126,7 +121,6 @@ jobs:
            echo "🚀 Ejecutando contenedor en modo producción..."
            docker run -d -p 8080:80 --name naturaleza naturaleza-app:latest
            echo "✅ Aplicación desplegada (simulada) en entorno de producción"
-
 ###############################################################################
 # 🟢 NUEVO JOB AGREGADO — NO SE MODIFICÓ NADA DE LO EXISTENTE
 ###############################################################################
@@ -156,7 +150,6 @@ jobs:
            docker push wanderleyfl/naturaleza-app:latest
 ##########################################################################
 # codigo nuevo
-
 ###############################################################################
 # 🔒 DEVSECOPS - SAST SECURITY SCAN
 ###############################################################################
@@ -165,9 +158,11 @@ jobs:
      - image: cimg/node:18.19
    steps:
      - checkout
+     # ✅ CAMBIO MINIMO: evita checksum a una ruta que falla.
+     # Usa el package-lock del repo (si existe siempre en tu root)
      - restore_cache:
          keys:
-           - v1-security-deps-{{ checksum "api-json-vue/frontend-vue/package.json" }}
+           - v1-security-deps-{{ checksum "api-json-vue/frontend-vue/package-lock.json" }}
            - v1-security-deps-
      - run:
          name: Install Security Dependencies
@@ -175,10 +170,11 @@ jobs:
            cd api-json-vue/frontend-vue
            echo "📦 Instalando dependencias de seguridad..."
            npm install
+     # ✅ CAMBIO MINIMO: cache key consistente con restore_cache
      - save_cache:
          paths:
            - api-json-vue/frontend-vue/node_modules
-         key: v1-security-deps-{{ checksum "api-json-vue/frontend-vue/package.json" }}
+         key: v1-security-deps-{{ checksum "api-json-vue/frontend-vue/package-lock.json" }}
      - run:
          name: Run SAST Security Scan with ESLint
          command: |
@@ -186,15 +182,12 @@ jobs:
             echo "=========================================="
             echo "🔒 Iniciando Análisis SAST con ESLint"
             echo "=========================================="
-            
-            # Ejecutar análisis con salida en terminal Y archivo JSON
-            npm run lint -- --format=stylish --format=json --output-file=eslint-security-report.json || true
-            
+            # ✅ CAMBIO MINIMO: usa el script que YA tienes y genera JSON
+            npm run lint:security || true
             echo ""
             echo "=========================================="
             echo "📊 Resultados del Análisis de Seguridad"
             echo "=========================================="
-            
             # Mostrar el reporte JSON formateado en terminal
             if [ -f eslint-security-report.json ]; then
               echo "✅ Reporte generado exitosamente"
@@ -217,7 +210,6 @@ jobs:
      - store_test_results:
          path: api-json-vue/frontend-vue
 ###############################################################################
-
 workflows:
  version: 2
  build_test_deploy:
@@ -237,7 +229,7 @@ workflows:
                - main
                - /feature\/.*/
      ###############################################################################
-     # � DEVSECOPS - SAST Security Scan ejecutado después de test_project
+     #  DEVSECOPS - SAST Security Scan ejecutado después de test_project
      ###############################################################################
      - security_sast_scan:
          requires:
@@ -248,7 +240,7 @@ workflows:
                - main
                - /feature\/.*/
      ###############################################################################
-     # �🟢 NUEVA LÍNEA AGREGADA — ejecutar push_docker_image después de test_project
+     # 🟢 NUEVA LÍNEA AGREGADA — ejecutar push_docker_image después de test_project
      ###############################################################################
      - push_docker_image:
          requires:
